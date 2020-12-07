@@ -1,0 +1,5 @@
+selenium
+webdriver-manager
+opencv-python-headless
+scikit-image>=0.17.0
+imutils
