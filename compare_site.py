@@ -7,10 +7,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import WebDriverException
 from skimage.metrics import structural_similarity
 import os
-
-os.environ['WDM_LOG_LEVEL'] = '0'
-
-out_dir = '/tmp/'
+import platform
 
 def screenshot_domain(domain, out_dir):
     """
@@ -22,6 +19,7 @@ def screenshot_domain(domain, out_dir):
         options = webdriver.ChromeOptions()
         options.headless = True
         try:
+            # installs chrome webdriver
             driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         except exception as E:
             print(f"Unable to install/update Chrome webdriver because {E}")
@@ -109,29 +107,38 @@ def ssim_compare_show(imgA, imgB):
     cv2.waitKey(0)
 
 
+def main():
+    #setting variables
+    os.environ['WDM_LOG_LEVEL'] = '0'
+    if platform.system() == "Windows":
+        out_dir = 'C:\\temp\\'
+    else:
+        out_dir = '/tmp/'
+        
+    # construct the argument parse and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-f", "--first", required=True,
+                    help="first input site")
+    ap.add_argument("-s", "--second", required=True,
+                    help="second input site")
+    ap.add_argument('-S', '--show', dest='show', action='store_true', default=False,
+                    help='Show comparison output images')
+    arguments = ap.parse_args()
 
-# construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-f", "--first", required = True,
-	help = "first input site")
-ap.add_argument("-s", "--second", required = True,
-	help = "second input site")
-ap.add_argument('-S','--show', dest = 'show', action = 'store_true', default = False,
-    help = 'Show comparison output images')
-arguments = ap.parse_args()
+    first = arguments.first
+    second = arguments.second
 
-first = arguments.first
-second = arguments.second
+    screenshot_domain(first, out_dir)
+    screenshot_domain(second, out_dir)
 
-screenshot_domain(first,out_dir='/tmp/')
-screenshot_domain(second, out_dir='/tmp/')
+    imgA = out_dir + first + '.png'
+    imgB = out_dir + second + '.png'
 
-imgA = out_dir + first + '.png'
-imgB = out_dir + second + '.png'
+    if arguments.show:
+        ssim_compare_show(imgA, imgB)
+    else:
+        ssim_compare(imgA, imgB)
 
-if arguments.show:
-    ssim_compare_show(imgA, imgB)
-else:
-    ssim_compare(imgA, imgB)
-
+if __name__ == "__main__":
+    main()
 
